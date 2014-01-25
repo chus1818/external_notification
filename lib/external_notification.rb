@@ -1,5 +1,5 @@
 require 'net/http'
-require_relative './lib/constant_store'
+require_relative 'constant_store'
 
 class ExternalNotification
 
@@ -44,16 +44,22 @@ private
 
   def request_to url_object
     Net::HTTP.start( url_object.host, url_object.port ) do |http|
-      http.request request_object_for( url_object.path )
+      http.request request_object_for( url_object.to_s )
     end
   end
 
   def request_object_for path
     case @request_type
       when :GET  then Net::HTTP::Get.new( path )
-      when :POST then Net::HTTP::Post.new( path )
+      when :POST then post_request( path )
       else Net::HTTP::Get.new( path )
     end
+  end
+
+  def post_request path
+    request = Net::HTTP::Post.new( path )
+    request.body = ""
+    request
   end
 
 end
