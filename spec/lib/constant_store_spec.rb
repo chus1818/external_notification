@@ -6,7 +6,7 @@ end
 
 describe ConstantStore do
   before { ConstantStore.const_set 'STORED_CONSTANT_NAME', nil }
-  let(:dummy_class) { Class.new { include ConstantStore } }
+  let(:dummy_class) { Class.new { extend ConstantStore } }
 
   describe 'ClassMethods module' do
     describe '#constant_store class method' do
@@ -36,7 +36,7 @@ describe ConstantStore do
         let( :endpoints ) do
           { :endpont_1 => "endpoint", :endpont_2 => "endpoint" }
         end
-        before  { subject.import_constant( endpoints ) }
+        before  { subject.class.import_constant( endpoints ) }
 
         it 'sets the class variable with the provided endpoints' do
           subject.class.const_get( 'TEST_CONSTANT' ).should eq endpoints
@@ -47,7 +47,7 @@ describe ConstantStore do
         let( :endpoints ) { "enpoints as string" }
 
         it 'raises a UnprocessableEndpoints error' do
-          expect{ subject.import_constant endpoints }.
+          expect{ subject.class.import_constant endpoints }.
           to raise_error( ConstantStore::UnprocessableEndpoints )
         end
       end

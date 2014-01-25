@@ -42,7 +42,7 @@ describe ExternalNotification do
 
         it 'raises a UnprocessableEndpoints error' do
           expect{ ExternalNotification.new endpoints }.
-          to raise_error( ExternalNotification::UnprocessableEndpoints )
+          to raise_error( ConstantStore::UnprocessableEndpoints )
         end
       end
     end

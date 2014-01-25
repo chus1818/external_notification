@@ -1,24 +1,28 @@
 module ConstantStore
 
-  module ClassMethods
-    def constant_stores constant_name, options = {}
-      constant_name = constant_name.to_s.upcase
-      ConstantStore.const_set 'STORED_CONSTANT_NAME', constant_name
-      ConstantStore.instance_variable_set '@constant_class', options[ :as ]
-
-      const_set constant_name, ConstantStore.initialized_constant_value
+  module InstanceMethods
+    def when_valid *args, &block
+      self.class.send :when_valid, *args, &block
     end
   end
 
-  def self.included base
-    base.extend ClassMethods
+  def self.extended base
+    base.send :include, InstanceMethods
   end
-  
+
+  def constant_stores constant_name, options = {}
+    constant_name = constant_name.to_s.upcase
+    ConstantStore.const_set 'STORED_CONSTANT_NAME', constant_name
+    ConstantStore.instance_variable_set '@constant_class', options[ :as ]
+
+    const_set constant_name, ConstantStore.initialized_constant_value
+  end
+
   def import_constant endpoints
     when_valid endpoints do
       new_endpoints = append_new endpoints
 
-      self.class.const_set stored_constant_name, new_endpoints
+      const_set stored_constant_name, new_endpoints
     end
   end
 
@@ -32,7 +36,7 @@ private
   end
 
   def append_new endpoints
-    existing_endpoints = self.class.const_get stored_constant_name
+    existing_endpoints = const_get stored_constant_name
 
     case constant_class
       when :hash   then existing_endpoints.merge( endpoints )

@@ -3,7 +3,7 @@ require_relative 'constant_store'
 
 class ExternalNotification
 
-  include ConstantStore
+  extend ConstantStore
 
   constant_stores :known_endpoints, :as => :hash
 
