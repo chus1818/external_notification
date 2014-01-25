@@ -48,29 +48,6 @@ describe ExternalNotification do
     end
   end
 
-  describe '#import_endpoints' do
-    context 'when a hash input' do
-      let( :endpoints ) do
-        { :endpont_1 => "endpoint", :endpont_2 => "endpoint" }
-      end
-      subject { ExternalNotification.new }
-      before  { subject.import_endpoints( endpoints ) }
-
-      it 'sets the KNOWN_ENDPONITS with the provided endpoints' do
-        subject.class.const_get( 'KNOWN_ENDPOINTS' ).should eq endpoints
-      end
-    end
-
-    context 'when input is not a hash' do
-      let( :endpoints ) { "enpoints as string" }
-
-      it 'raises a UnprocessableEndpoints error' do
-        expect{ ExternalNotification.new endpoints }.
-        to raise_error( ExternalNotification::UnprocessableEndpoints )
-      end
-    end
-  end
-
   describe '#with' do
     context 'when options get request_type provided' do
       let( :options ) do
@@ -168,7 +145,7 @@ describe ExternalNotification do
       subject { ExternalNotification.new }
       before  { stub_const "ExternalNotification::KNOWN_ENDPOINTS", endpoints }
     
-      
+
     end
     context "when receiver is a valid url string" do
       let( :receiver ) { "http://test_url.com" }

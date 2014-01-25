@@ -1,23 +1,17 @@
 require 'net/http'
+require_relative './lib/constant_store'
 
 class ExternalNotification
 
-  KNOWN_ENDPOINTS = {} 
+  include ConstantStore
+
+  constant_stores :known_endpoints, :as => :hash
 
   def initialize endpoints = nil
     @request_type = :GET
 
     when_valid endpoints do 
       self.class.const_set( 'KNOWN_ENDPOINTS', endpoints )
-    end
-  end
-
-  def import_endpoints endpoints
-    when_valid endpoints do
-      existing_endpoints = self.class.const_get 'KNOWN_ENDPOINTS'
-      new_endpoints      = existing_endpoints.merge endpoints
-
-      self.class.const_set 'KNOWN_ENDPOINTS', new_endpoints
     end
   end
 
@@ -35,18 +29,7 @@ class ExternalNotification
     handle_response response
   end
 
-protected
-
-  class UnprocessableEndpoints < StandardError; end
-
 private
-
-  def when_valid endpoints
-    if endpoints
-      raise UnprocessableEndpoints unless endpoints.is_a? Hash
-      yield
-    end
-  end
 
   def handle_response response
     response
