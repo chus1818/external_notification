@@ -2,19 +2,32 @@ require 'net/http'
 
 class ExternalNotification
 
-  KNOWN_ENDPOINTS = {
-    :laxarxa => lambda {
-      endpoint_subpath = 'api/v1/import_embed_audio'
-      return case RAILS_ENV
-        when 'development'   then "http://localhost:3001/#{endpoint_subpath}"
-        when 'preproduction' then "http://www.xal-laxarxa.gnuinepath.com/#{endpoint_subpath}"
-        when 'production'    then "http://www.laxarxa.com/#{endpoint_subpath}" 
-        else "http://www.laxarxa.com/#{endpoint_subpath}"
-      end
-    }.call
-  } 
+  KNOWN_ENDPOINTS = {} 
 
-  def initialize
+  def initialize endpoints = nil
+    @request_type = :GET
+
+    when_valid endpoints do 
+      self.class.const_set( 'KNOWN_ENDPOINTS', endpoints )
+    end
+  end
+
+  def import_endpoints endpoints
+    when_valid endpoints do
+      existing_endpoints = self.class.const_get 'KNOWN_ENDPOINTS'
+      new_endpoints      = existing_endpoints.merge endpoints
+
+      self.class.const_set 'KNOWN_ENDPOINTS', new_endpoints
+    end
+  end
+
+  def with options = {}
+    if block_given? or options[ :params ]
+      @request_type = :POST unless options.delete( :request_type ) == :GET
+      @content = block_given? ? yield.to_param : options[:params].to_param
+    end
+  
+    self
   end
   
   def send_to receiver
@@ -22,14 +35,18 @@ class ExternalNotification
     handle_response response
   end
 
-  def with options = {}
-    @request_type = :POST unless options.delete( :request_type ) == :GET
-    @content      = block_given? ? yield.to_param : options.to_param
-  
-    self
-  end
+protected
+
+  class UnprocessableEndpoints < StandardError; end
 
 private
+
+  def when_valid endpoints
+    if endpoints
+      raise UnprocessableEndpoints unless endpoints.is_a? Hash
+      yield
+    end
+  end
 
   def handle_response response
     response
